@@ -51,6 +51,9 @@ export interface VariableCosts {
 
 export type EstimatedField = "depreciation" | "tyreLife";
 
+/** Categorias sem valor inicial: contam 0 € e o ecrã tem de o dizer. */
+export type MissingField = "maintenance" | "tyres";
+
 /** Todos os valores em cêntimos por ano, sem arredondar. Arredonda-se só ao mostrar. */
 export interface CostResult {
   fixed: FixedCosts;
@@ -64,6 +67,7 @@ export interface CostResult {
   /** Custo variável por km (energia, manutenção e pneus), para o ponto de equilíbrio. */
   variablePerKm: number | null;
   estimated: EstimatedField[];
+  missing: MissingField[];
 }
 
 export function annualCost(input: CostInput): CostResult {
@@ -133,7 +137,15 @@ export function annualCost(input: CostInput): CostResult {
     perKm: km > 0 ? totalYear / km : null,
     variablePerKm: km > 0 ? (variable.energy + variable.maintenance + variable.tyres) / km : null,
     estimated,
+    missing: missingFields(input),
   };
+}
+
+function missingFields(input: CostInput): MissingField[] {
+  const missing: MissingField[] = [];
+  if (input.maintenanceYearCents === undefined) missing.push("maintenance");
+  if (input.tyreSetCents === undefined) missing.push("tyres");
+  return missing;
 }
 
 function annualizedInspection(priceCents?: number, intervalYears?: number): number {

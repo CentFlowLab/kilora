@@ -81,7 +81,8 @@ A app tem 11 módulos. Os da versão 1 são o que tem de existir para lançar. O
 - Passo 2, a compra: preço pago, data de compra, valor atual estimado (opcional, com ligação externa para ver anúncios semelhantes), financiamento (opcional: montante, taxa, número de prestações, início).
 - Passo 3, custos fixos: seguro (anual ou mensal), IUC anual, data da última inspeção, estacionamento ou garagem por mês.
 - Passo 4, uso: quilómetros por ano, consumo médio, preço médio do combustível ou da eletricidade, portagens por mês, manutenção média por ano.
-- Campos obrigatórios: combustível, quilómetros por ano, preço pago (ou valor atual), seguro, consumo, preço da energia. O resto tem valor inicial marcado "estimado".
+- Campos obrigatórios: combustível, quilómetros por ano, preço pago (ou valor atual), seguro, consumo, preço da energia. O resto tem valor inicial marcado "estimado", exceto a manutenção e o preço dos pneus, que não têm valor inicial (ver secção 5, "Decisões de cálculo").
+- Se o valor atual for maior que o preço pago, o passo 2 pergunta "Confirmas?" antes de guardar. Quase sempre é engano de escrita.
 - Ecrã final: o número grande (€/mês e €/km), a divisão em fixos e variáveis, e a frase "Isto é uma estimativa. Regista despesas para afinar."
 - **Feito quando:** alguém completa o onboarding só com os 6 campos obrigatórios, vê o resultado, fecha a app, volta, e o resultado continua lá.
 
@@ -93,6 +94,7 @@ A app tem 11 módulos. Os da versão 1 são o que tem de existir para lançar. O
 - Até 3 cartões de dicas, geradas por regras fixas (ver F2.1). Nada de texto gerado por IA.
 - Próximos lembretes (até 3) e botão "+" flutuante para registar.
 - Estados: vazio (convida ao onboarding), só estimativas, com dados reais, carro vendido.
+- Notas junto do número principal: "Não inclui manutenção. Adiciona-a para um custo mais real" quando a manutenção está em branco (o mesmo para os pneus), e "O teu carro valorizou" quando a depreciação é negativa.
 - **F2.1 · Regras das dicas.** O seguro pesa mais de 30 % dos fixos: sugere comparar seguros. O consumo dos últimos 3 enchimentos subiu mais de 10 % contra a média: sugere verificar pressão dos pneus. Menos de 5 000 km por ano: mostra o custo por km e pergunta se compensa. Mais de 25 000 km por ano: avisa que a manutenção vai pesar mais.
 - **Feito quando:** os números do painel batem certo com o exemplo da secção 5 e mudam de imediato quando se edita qualquer dado.
 
@@ -232,6 +234,8 @@ PMT = \frac{P \cdot i}{1 - (1+i)^{-n}}
 
 Juros totais = PMT vezes n menos P. Dividem-se pelos anos do crédito para entrar em J.
 
+No custo atual, J conta só os juros dos meses do crédito que caem nos últimos 12 meses. Um crédito já acabado dá 0, e um crédito com menos de 12 meses decorridos conta só esses meses.
+
 ### Consumo
 
 Método de depósito cheio a depósito cheio:
@@ -259,6 +263,16 @@ Se c alt for menor ou igual a c var, a alternativa é sempre mais barata e a app
 - **Estimado:** usa só o que foi preenchido nas definições do carro.
 - **Real:** usa as despesas registadas nos últimos 12 meses. Para cada categoria, se houver registos nesses 12 meses, usam-se os registos. Se não houver, usa-se a estimativa. Assim nada é contado duas vezes.
 - O painel diz sempre qual dos dois está a mostrar e, no modo misto, que categorias ainda são estimadas.
+
+### Decisões de cálculo
+
+Decididas a 5 de novembro de 2026, depois da Etapa 1.
+
+| Situação | Motor de cálculo | Ecrã |
+| --- | --- | --- |
+| Manutenção ou preço dos pneus em branco | Conta 0 € e indica que a categoria está em falta. Não há valor inicial, para não inventar um preço sem fonte | Nota junto do número: "Não inclui manutenção. Adiciona-a para um custo mais real" |
+| Crédito já acabado ou a meio | Só os juros dos meses do crédito dentro dos últimos 12 meses. Crédito acabado dá 0. Implementar e testar na Etapa 3 | Nada de especial |
+| Valor atual maior que o preço pago | A depreciação fica negativa, porque é a conta honesta | Nota "O teu carro valorizou". No onboarding pergunta "Confirmas?" |
 
 ### Valores iniciais (sempre editáveis, sempre marcados "estimado")
 
@@ -741,6 +755,9 @@ Uma app de dinheiro com contas erradas perde a confiança de imediato. Por isso 
 | Sem nenhum enchimento cheio | Mostra custo, não mostra consumo, explica porquê |
 | Primeiro enchimento cheio | Serve só de ponto de partida |
 | Carro com menos de 1 mês de posse | Depreciação sem dividir por zero, marcada "estimado" |
+| Valor atual maior que o preço pago | Depreciação negativa, nota "O teu carro valorizou", "Confirmas?" no onboarding |
+| Manutenção ou pneus em branco | Contam 0 € com a nota "Não inclui manutenção" junto do número |
+| Crédito já acabado | Juros contam 0 no custo atual |
 | Quilómetros por ano iguais a zero | Mostra só €/mês, sem €/km |
 | Valor zero ou negativo | Recusa |
 | Data no futuro | Só aceite em lembretes |
@@ -852,6 +869,8 @@ O Cursor Pro dura um mês, por isso gasta-o nas etapas 1 a 9, que são as que t�
 - [ ] Painel com número grande, barra, gráfico e dicas
 - [ ] Estados vazio, estimado e real
 - [ ] Botão "como é calculado?"
+- [ ] Juros só dos meses do crédito nos últimos 12 meses, com teste para crédito já acabado
+- [ ] Notas "Não inclui manutenção" e "O teu carro valorizou", e "Confirmas?" no onboarding
 
 **Etapa 4 · Despesas e abastecimentos**
 

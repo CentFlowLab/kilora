@@ -96,6 +96,24 @@ describe("annualCost: casos extremos", () => {
     expect(result.estimated).toContain("tyreLife");
   });
 
+  it("manutenção e pneus em branco contam 0 € e ficam assinalados como em falta", () => {
+    expect(annualCost(SPEC_EXAMPLE).missing).toEqual([]);
+    const result = annualCost({ ...SPEC_EXAMPLE, maintenanceYearCents: undefined, tyreSetCents: undefined });
+    expect(result.variable.maintenance).toBe(0);
+    expect(result.variable.tyres).toBe(0);
+    expect(result.missing).toEqual(["maintenance", "tyres"]);
+  });
+
+  it("manutenção escrita como 0 € é um valor dado, não está em falta", () => {
+    expect(annualCost({ ...SPEC_EXAMPLE, maintenanceYearCents: 0 }).missing).toEqual([]);
+  });
+
+  it("um carro que valorizou dá depreciação negativa, sem a esconder", () => {
+    const result = annualCost({ ...SPEC_EXAMPLE, currentValueCents: 1_300_000 });
+    expect(result.fixed.depreciation).toBe(-50_000);
+    expect(result.estimated).not.toContain("depreciation");
+  });
+
   it("recusa valores negativos", () => {
     expect(() => annualCost({ ...SPEC_EXAMPLE, insuranceYearCents: -1 })).toThrow(RangeError);
     expect(() => annualCost({ ...SPEC_EXAMPLE, kmPerYear: -100 })).toThrow(RangeError);
