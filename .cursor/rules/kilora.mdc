@@ -1,0 +1,18 @@
+---
+description: Regras do projeto Kilora
+alwaysApply: true
+---
+
+Projeto: Kilora, web app PWA em português de Portugal que calcula o custo real de um carro.
+Especificação: @docs/especificacao.md
+Stack: Next.js (App Router, exportação estática), TypeScript estrito, Tailwind, shadcn/ui, Dexie, Zod, Recharts, date-fns, Vitest.
+Regras:
+- Toda a lógica de cálculo fica em src/engine como funções puras, sem React nem acesso à base de dados. Cada função tem testes.
+- Dinheiro em cêntimos inteiros. Datas como yyyy-mm-dd. Formatação pt-PT (vírgula decimal, € depois do número).
+- Todos os textos vêm de src/i18n/pt-PT.json. Nunca escrever texto fixo nos componentes.
+- Nenhum dado do utilizador sai do dispositivo. Não adicionar analytics que identifiquem pessoas, nem chamadas a servidores além da validação de licença.
+- Mobile primeiro. Alvos de toque de 44 px. Respeitar prefers-reduced-motion.
+- Acessibilidade: etiquetas, foco visível, contraste. Gráficos com alternativa em texto.
+- Antes de alterar o motor de cálculo, atualizar os testes com o exemplo da especificação.
+- Não adicionar dependências sem justificar. Preferir o que já está no projeto.
+- Não inventar dados de mercado, preços ou regras legais. Regras ficam em src/engine/rules.ts com data de verificação.

@@ -1,0 +1,11 @@
+{
+  "app": {
+    "name": "Kilora",
+    "description": "Descobre quanto te custa o teu carro, por mês e por km. Fica tudo no teu telemóvel."
+  },
+  "home": {
+    "title": "Quanto te custa o teu carro, de verdade?",
+    "subtitle": "Descobre o custo por mês e por km em 2 minutos. Fica tudo no teu telemóvel",
+    "cta": "Calcular o meu custo"
+  }
+}
