@@ -61,6 +61,16 @@ describe("annualCost: crédito", () => {
     expect(withCredit.totalYear).not.toBeCloseTo(withoutCredit.totalYear + yearOfPayments, 0);
   });
 
+  it("um crédito já acabado não acrescenta nada ao custo atual", () => {
+    const finished = annualCost({
+      ...SPEC_EXAMPLE,
+      financing: { ...financing, startDate: "2018-01-01" },
+      asOf: "2026-11-05",
+    });
+    expect(finished.fixed.interest).toBe(0);
+    expect(finished.totalYear).toBe(withoutCredit.totalYear);
+  });
+
   it("com taxa zero não acrescenta nada", () => {
     const zeroRate = annualCost({ ...SPEC_EXAMPLE, financing: { ...financing, annualRatePct: 0 } });
     expect(zeroRate.totalYear).toBe(withoutCredit.totalYear);
@@ -80,7 +90,7 @@ describe("annualCost: casos extremos", () => {
   it("carro com menos de 1 mês não divide por zero e marca a depreciação como estimada", () => {
     const result = annualCost({ ...SPEC_EXAMPLE, ownershipYears: 0 });
     expect(Number.isFinite(result.fixed.depreciation)).toBe(true);
-    expect(result.fixed.depreciation).toBe(144_000);
+    expect(result.fixed.depreciation).toBe(900_000 * 0.12);
     expect(result.estimated).toContain("depreciation");
   });
 
@@ -111,7 +121,22 @@ describe("annualCost: casos extremos", () => {
   it("um carro que valorizou dá depreciação negativa, sem a esconder", () => {
     const result = annualCost({ ...SPEC_EXAMPLE, currentValueCents: 1_300_000 });
     expect(result.fixed.depreciation).toBe(-50_000);
+    expect(result.appreciated).toBe(true);
     expect(result.estimated).not.toContain("depreciation");
+    expect(annualCost(SPEC_EXAMPLE).appreciated).toBe(false);
+  });
+
+  it("IUC e inspeção em branco ficam assinalados como em falta", () => {
+    const result = annualCost({ ...SPEC_EXAMPLE, iucYearCents: undefined, inspectionPriceCents: undefined });
+    expect(result.fixed.iuc).toBe(0);
+    expect(result.missing).toEqual(["iuc", "inspection"]);
+  });
+
+  it("só com o valor atual e sem data de compra, estima a depreciação com 12 %", () => {
+    const result = annualCost({ ...SPEC_EXAMPLE, purchasePriceCents: undefined, ownershipYears: undefined });
+    expect(result.fixed.depreciation).toBe(108_000);
+    expect(result.depreciation.method).toBe("rate");
+    expect(result.estimated).toContain("depreciation");
   });
 
   it("recusa valores negativos", () => {

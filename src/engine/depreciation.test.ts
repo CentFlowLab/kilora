@@ -19,13 +19,33 @@ describe("yearsBetween", () => {
 describe("annualDepreciation", () => {
   it("é linear com valor atual conhecido", () => {
     const result = annualDepreciation({ purchasePriceCents: 1_200_000, currentValueCents: 900_000, ownershipYears: 2 });
-    expect(result).toEqual({ annualCents: 150_000, currentValueCents: 900_000, estimated: false });
+    expect(result).toMatchObject({ annualCents: 150_000, currentValueCents: 900_000, estimated: false, method: "linear" });
   });
 
-  it("com menos de 1 mês de posse usa a taxa inicial sobre o preço de compra", () => {
+  it("com menos de 1 mês de posse usa a taxa inicial sobre o valor atual", () => {
     const result = annualDepreciation({ purchasePriceCents: 1_200_000, currentValueCents: 1_190_000, ownershipYears: 0.02 });
-    expect(result.annualCents).toBe(144_000);
+    expect(result.annualCents).toBe(142_800);
     expect(result.estimated).toBe(true);
+  });
+
+  it("sem data de compra aplica a taxa ao valor atual, ou ao preço pago se for o único", () => {
+    expect(annualDepreciation({ purchasePriceCents: 1_000_000, currentValueCents: 800_000 })).toMatchObject({
+      annualCents: 96_000,
+      method: "rate",
+      estimated: true,
+      baseCents: 800_000,
+    });
+    expect(annualDepreciation({ purchasePriceCents: 1_000_000 })).toMatchObject({ annualCents: 120_000, method: "rate" });
+  });
+
+  it("sem data, um carro que valorizou perde a taxa sobre o valor de hoje", () => {
+    const result = annualDepreciation({ purchasePriceCents: 1_200_000, currentValueCents: 1_300_000 });
+    expect(result.annualCents).toBe(156_000);
+    expect(result.baseCents).toBe(1_300_000);
+  });
+
+  it("sem preço nem valor atual recusa", () => {
+    expect(() => annualDepreciation({ ownershipYears: 2 })).toThrow(RangeError);
   });
 
   it("aceita outra taxa inicial", () => {

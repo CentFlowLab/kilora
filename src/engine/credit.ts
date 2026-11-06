@@ -1,9 +1,12 @@
+import { addMonths, parseISO, subMonths } from "date-fns";
 import { assertNonNegative } from "./assert";
 
 export interface Financing {
   principalCents: number;
   annualRatePct: number;
   months: number;
+  /** Data da primeira prestação. Sem ela, contam-se os juros de um ano inteiro de crédito. */
+  startDate?: string;
 }
 
 /** PMT = P·i / (1 − (1+i)^−n), com i a taxa mensal. Taxa zero dá P / n. */
@@ -28,4 +31,28 @@ export function totalInterest(financing: Financing): number {
  */
 export function annualInterest(financing: Financing): number {
   return totalInterest(financing) / (financing.months / 12);
+}
+
+/** Quantas prestações caem nos 12 meses que acabam em `asOf` (inclusive). */
+export function instalmentsInLast12Months(financing: Financing & { startDate: string }, asOf: string): number {
+  const end = parseISO(asOf);
+  const windowStart = subMonths(end, 12);
+  const start = parseISO(financing.startDate);
+  let count = 0;
+  for (let k = 0; k < financing.months; k++) {
+    const due = addMonths(start, k);
+    if (due > end) break;
+    if (due > windowStart) count++;
+  }
+  return count;
+}
+
+/**
+ * Juros que entram no custo atual: juros médios por prestação × prestações dos últimos 12 meses.
+ * Um crédito ativo o ano inteiro dá o mesmo que `annualInterest`; um crédito acabado dá 0.
+ */
+export function interestInLast12Months(financing: Financing, asOf?: string): number {
+  if (!financing.startDate || !asOf) return annualInterest(financing);
+  const perInstalment = totalInterest(financing) / financing.months;
+  return perInstalment * instalmentsInLast12Months({ ...financing, startDate: financing.startDate }, asOf);
 }

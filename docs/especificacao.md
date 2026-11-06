@@ -77,7 +77,7 @@ A app tem 11 módulos. Os da versão 1 são o que tem de existir para lançar. O
 ### F1 · Onboarding
 
 - Quatro passos com barra de progresso. Cada passo guarda sozinho, e a pessoa pode sair e voltar.
-- Passo 1, o carro: marca e modelo (texto livre com sugestões), ano, combustível (gasolina, gasóleo, elétrico, híbrido, híbrido plug-in, GPL), quilómetros atuais.
+- Passo 1, o carro: marca e modelo (texto livre com sugestões), ano, combustível (gasolina, gasóleo, elétrico, híbrido, híbrido plug-in, GPL), quilómetros atuais. Os quilómetros atuais só entram na Etapa 4, quando os abastecimentos lhes derem uso.
 - Passo 2, a compra: preço pago, data de compra, valor atual estimado (opcional, com ligação externa para ver anúncios semelhantes), financiamento (opcional: montante, taxa, número de prestações, início).
 - Passo 3, custos fixos: seguro (anual ou mensal), IUC anual, data da última inspeção, estacionamento ou garagem por mês.
 - Passo 4, uso: quilómetros por ano, consumo médio, preço médio do combustível ou da eletricidade, portagens por mês, manutenção média por ano.
@@ -222,6 +222,7 @@ r = 1 - \left(\frac{V_{atual}}{V_{compra}}\right)^{1/anos}
 ```
 
 - Se a pessoa não indicar o valor atual, usa-se 12 % ao ano como valor inicial sugerido, marcado "estimado" e editável.
+- Sem data de compra, ou com menos de 1 mês de posse, não há anos para dividir: a depreciação é 12 % ao ano sobre o valor atual, ou sobre o preço pago se for o único valor indicado, e fica marcada "estimado".
 - Custo de oportunidade (dinheiro parado no carro) é opcional e vem desligado. Quando ligado, soma capital imobilizado vezes uma taxa anual definida pela pessoa.
 
 ### Crédito
@@ -274,6 +275,16 @@ Decididas a 5 de novembro de 2026, depois da Etapa 1.
 | Crédito já acabado ou a meio | Só os juros dos meses do crédito dentro dos últimos 12 meses. Crédito acabado dá 0. Implementar e testar na Etapa 3 | Nada de especial |
 | Valor atual maior que o preço pago | A depreciação fica negativa, porque é a conta honesta | Nota "O teu carro valorizou". No onboarding pergunta "Confirmas?" |
 
+Decididas a 6 de novembro de 2026, na Etapa 3.
+
+| Situação | Motor de cálculo | Ecrã |
+| --- | --- | --- |
+| Sem data de compra | 12 % ao ano sobre o valor atual (ou o preço pago, se for o único). Um carro que valorizou também perde valor daqui para a frente, por isso a nota "valorizou" só aparece quando há data para fazer a conta linear | Nota "A depreciação é estimada com 12 % ao ano" |
+| IUC em branco | Conta 0 € e indica que está em falta, como a manutenção | Entra na nota "Não inclui …" |
+| Inspeção | Fica em falta até a Etapa 5 trazer as regras de periodicidade e o preço | Entra na nota "Não inclui …" |
+| Seguro indicado por mês | Guarda-se por ano (× 12) | Nada de especial |
+| Gráfico circular | Só as categorias acima de 0. Uma depreciação negativa não entra no gráfico | A legenda com valores e percentagens é também a alternativa em texto |
+
 ### Valores iniciais (sempre editáveis, sempre marcados "estimado")
 
 | Parâmetro | Valor inicial | Onde se muda |
@@ -290,6 +301,7 @@ Decididas a 5 de novembro de 2026, depois da Etapa 1.
 - Dinheiro guardado em cêntimos inteiros. Cálculos intermédios em decimais, arredondados só ao mostrar.
 - Português de Portugal: vírgula decimal, espaço nos milhares, símbolo € depois do número.
 - O campo de números aceita "1,85" e "1.85".
+- Com um só separador, ele é decimal. Exceção nos euros e nos inteiros: um separador seguido de exatamente 3 algarismos é de milhares, porque esses campos nunca têm 3 casas decimais ("12.000" € são doze mil euros, "12.000" km são doze mil km). Nos preços por litro ou kWh, "1.759" continua a ser 1,759 €.
 - Custo por km mostra 2 casas decimais, com 3 em detalhe.
 
 ### Exemplo para testes
@@ -334,10 +346,10 @@ interface Vehicle {
   nickname: string;           // ex.: "O meu Golf"
   brand?: string;
   model?: string;
-  year: number;
+  year?: number;
   fuel: Fuel;
-  purchaseDate: string;       // yyyy-mm-dd
-  purchasePriceCents: number;
+  purchaseDate?: string;      // yyyy-mm-dd
+  purchasePriceCents?: number; // obrigatório este ou currentValueCents
   currentValueCents?: number; // estimado
   currentValueDate?: string;
   odometerAtPurchase?: number;
@@ -345,7 +357,7 @@ interface Vehicle {
   consumptionPer100: number;  // L ou kWh
   energyPriceCents: number;   // por L ou kWh
   insuranceYearCents: number;
-  iucYearCents: number;
+  iucYearCents?: number;
   iucMonth?: number;          // 1-12
   inspectionPriceCents?: number;
   lastInspectionDate?: string;
@@ -412,6 +424,11 @@ interface Settings {
   - As fotos guardam-se como bytes (`Uint8Array`) com o tipo de imagem, e não como `Blob`, porque os bytes funcionam melhor no Safari do iPhone e passam diretamente para o backup. O limite é de 1 MB por foto, depois de comprimida.
   - Um campo em branco fica ausente na base de dados e no backup, nunca guardado como 0. Um 0 escrito pela pessoa continua a ser 0.
   - Importar um backup é tudo ou nada: valida o ficheiro inteiro antes de gravar e grava numa só transação. Se já houver dados no dispositivo, a pessoa escolhe substituir tudo ou cancelar.
+- Decidido na Etapa 3:
+  - Ano, data de compra, preço pago e IUC são opcionais no carro, para o onboarding funcionar só com os 6 campos obrigatórios. O esquema exige o preço pago ou o valor atual.
+  - O rascunho do onboarding fica no `localStorage` (chave `kilora.onboarding`), com o texto tal como foi escrito e o passo atual. Só passa para a base de dados no fim, já validado, e o rascunho apaga-se.
+  - O tema "auto" é a ausência do atributo `data-theme`: segue o sistema. "Claro" e "escuro" põem `light` e `dark`.
+  - O botão de dados de demonstração só existe com `NODE_ENV=development`. O texto dele não está nas traduções, para não entrar no build de produção, e o build final foi verificado sem ele.
 - O backup em JSON inclui o número de versão do esquema e as fotos opcionais.
 
 ### O que nunca se guarda nem se envia
@@ -885,7 +902,8 @@ O Cursor Pro dura um mês, por isso gasta-o nas etapas 1 a 9, que são as que t�
 - [ ] Consumo e gráfico
 - [ ] Aviso de anomalia
 - [ ] Despesas recorrentes
-- [ ] Foto de recibo
+- [ ] Foto de recibo, comprimida antes de gravar: o limite é 1 MB por foto e uma foto normal de telemóvel tem vários MB, por isso sem compressão é recusada
+- [ ] Quilómetros atuais de volta ao passo 1 do onboarding e às definições do carro
 
 **Etapa 5 · Lembretes**
 

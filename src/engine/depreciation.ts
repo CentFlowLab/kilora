@@ -22,48 +22,73 @@ export function yearsBetween(from: string, to: string): number {
 }
 
 export interface DepreciationInput {
-  purchasePriceCents: number;
+  /** Pelo menos um de `purchasePriceCents` e `currentValueCents` tem de existir. */
+  purchasePriceCents?: number;
   currentValueCents?: number;
-  ownershipYears: number;
-  /** Taxa usada quando não há valor atual. Por defeito 12 % ao ano. */
+  /** Ausente quando não se sabe a data de compra. */
+  ownershipYears?: number;
+  /** Taxa usada quando falta informação. Por defeito 12 % ao ano. */
   defaultRatePct?: number;
 }
+
+/**
+ * - `linear`: (compra − atual) / anos, com os dois valores e pelo menos 1 mês de posse.
+ * - `compound`: só compra e anos; o valor atual estima-se com a taxa composta.
+ * - `rate`: falta a data, ou há menos de 1 mês; taxa sobre o valor conhecido.
+ */
+export type DepreciationMethod = "linear" | "compound" | "rate";
 
 export interface DepreciationResult {
   annualCents: number;
   currentValueCents: number;
   estimated: boolean;
+  method: DepreciationMethod;
+  ratePct: number;
+  /** Valor sobre o qual se aplicou a taxa (método `rate`). */
+  baseCents: number;
 }
 
-/** Depreciação linear do passado: (compra − atual) / anos de posse. */
 export function annualDepreciation(input: DepreciationInput): DepreciationResult {
   const { purchasePriceCents, currentValueCents, ownershipYears } = input;
   const ratePct = input.defaultRatePct ?? DEFAULTS.depreciationRatePct;
-  assertNonNegative({ purchasePriceCents, ownershipYears, ratePct });
+  assertNonNegative({ purchasePriceCents, currentValueCents, ownershipYears, ratePct });
 
-  if (ownershipYears < MIN_OWNERSHIP_YEARS) {
-    const annualCents = (purchasePriceCents * ratePct) / 100;
+  const knownYears = ownershipYears !== undefined && ownershipYears >= MIN_OWNERSHIP_YEARS ? ownershipYears : undefined;
+
+  if (purchasePriceCents !== undefined && currentValueCents !== undefined && knownYears !== undefined) {
     return {
-      annualCents,
-      currentValueCents: currentValueCents ?? purchasePriceCents,
-      estimated: true,
+      annualCents: (purchasePriceCents - currentValueCents) / knownYears,
+      currentValueCents,
+      estimated: false,
+      method: "linear",
+      ratePct,
+      baseCents: purchasePriceCents,
     };
   }
 
-  if (currentValueCents === undefined) {
-    const estimatedValue = projectValue(purchasePriceCents, ratePct / 100, ownershipYears);
+  if (purchasePriceCents !== undefined && currentValueCents === undefined && knownYears !== undefined) {
+    const estimatedValue = projectValue(purchasePriceCents, ratePct / 100, knownYears);
     return {
-      annualCents: (purchasePriceCents - estimatedValue) / ownershipYears,
+      annualCents: (purchasePriceCents - estimatedValue) / knownYears,
       currentValueCents: estimatedValue,
       estimated: true,
+      method: "compound",
+      ratePct,
+      baseCents: purchasePriceCents,
     };
   }
 
-  assertNonNegative({ currentValueCents });
+  const baseCents = currentValueCents ?? purchasePriceCents;
+  if (baseCents === undefined) {
+    throw new RangeError("Falta o preço de compra ou o valor atual");
+  }
   return {
-    annualCents: (purchasePriceCents - currentValueCents) / ownershipYears,
-    currentValueCents,
-    estimated: false,
+    annualCents: (baseCents * ratePct) / 100,
+    currentValueCents: currentValueCents ?? baseCents,
+    estimated: true,
+    method: "rate",
+    ratePct,
+    baseCents,
   };
 }
 

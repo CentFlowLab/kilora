@@ -34,15 +34,15 @@ export const RECEIPT_MIME_TYPES = ["image/jpeg", "image/webp", "image/png"] as c
 
 export const MAX_RECEIPT_BYTES = 1_000_000;
 
-export const vehicleSchema = z.strictObject({
+const vehicleFields = z.strictObject({
   id,
   nickname: z.string().trim().min(1).max(60),
   brand: z.string().trim().max(60).optional(),
   model: z.string().trim().max(60).optional(),
-  year: z.int().min(1900).max(2100),
+  year: z.int().min(1900).max(2100).optional(),
   fuel: z.enum(FUELS),
-  purchaseDate: day,
-  purchasePriceCents: positiveCents,
+  purchaseDate: day.optional(),
+  purchasePriceCents: positiveCents.optional(),
   currentValueCents: cents.optional(),
   currentValueDate: day.optional(),
   odometerAtPurchase: km.optional(),
@@ -50,7 +50,7 @@ export const vehicleSchema = z.strictObject({
   consumptionPer100: z.number().positive(),
   energyPriceCents: unitPriceCents,
   insuranceYearCents: cents,
-  iucYearCents: cents,
+  iucYearCents: cents.optional(),
   iucMonth: z.int().min(1).max(12).optional(),
   inspectionPriceCents: cents.optional(),
   lastInspectionDate: day.optional(),
@@ -71,6 +71,11 @@ export const vehicleSchema = z.strictObject({
   soldPriceCents: cents.optional(),
   createdAt: timestamp,
 });
+
+export const vehicleSchema = vehicleFields.refine(
+  (v) => v.purchasePriceCents !== undefined || v.currentValueCents !== undefined,
+  { message: "É preciso o preço pago ou o valor atual" },
+);
 
 export const expenseSchema = z.strictObject({
   id,

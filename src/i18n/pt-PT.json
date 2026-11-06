@@ -8,6 +8,172 @@
     "subtitle": "Descobre o custo por mês e por km em 2 minutos. Fica tudo no teu telemóvel",
     "cta": "Calcular o meu custo"
   },
+  "common": {
+    "optional": "opcional",
+    "back": "Voltar",
+    "next": "Continuar",
+    "close": "Fechar",
+    "loading": "A carregar…"
+  },
+  "fuel": {
+    "gasolina": "Gasolina",
+    "gasoleo": "Gasóleo",
+    "eletrico": "Elétrico",
+    "hibrido": "Híbrido",
+    "hibrido_plugin": "Híbrido plug-in",
+    "gpl": "GPL"
+  },
+  "units": {
+    "litresPer100": "L/100 km",
+    "kwhPer100": "kWh/100 km",
+    "litre": "L",
+    "kwh": "kWh",
+    "perLitre": "€ por litro",
+    "perKwh": "€ por kWh",
+    "euros": "€",
+    "eurosPerMonth": "€ por mês",
+    "eurosPerYear": "€ por ano",
+    "km": "km",
+    "kmPerYear": "km por ano",
+    "percent": "%",
+    "months": "meses"
+  },
+  "onboarding": {
+    "title": "O teu primeiro custo real",
+    "progress": "Passo {step} de {total}",
+    "finish": "Ver o meu custo",
+    "saving": "A guardar…",
+    "saved": "Guardado neste dispositivo",
+    "defaultNickname": "O meu carro",
+    "steps": {
+      "1": { "title": "O teu carro", "hint": "Só precisamos do combustível. O resto ajuda a dar-lhe nome." },
+      "2": { "title": "A compra", "hint": "Basta o preço que pagaste ou o valor que achas que vale hoje." },
+      "3": { "title": "Custos fixos", "hint": "O que pagas mesmo com o carro parado." },
+      "4": { "title": "Como o usas", "hint": "Os quilómetros e a energia que gastas." }
+    },
+    "fields": {
+      "fuel": "Combustível",
+      "brand": "Marca",
+      "model": "Modelo",
+      "year": "Ano",
+      "purchasePrice": "Preço que pagaste",
+      "purchaseDate": "Data de compra",
+      "currentValue": "Valor atual estimado",
+      "currentValueHint": "Quanto achas que vale hoje. Vê anúncios de carros parecidos para teres uma ideia.",
+      "hasFinancing": "Comprei com crédito",
+      "financingPrincipal": "Montante do crédito",
+      "financingRate": "Taxa de juro anual",
+      "financingMonths": "Número de prestações",
+      "financingStart": "Data da primeira prestação",
+      "insurance": "Seguro",
+      "insurancePeriodYear": "Por ano",
+      "insurancePeriodMonth": "Por mês",
+      "iuc": "IUC por ano",
+      "lastInspectionDate": "Data da última inspeção",
+      "parkingMonth": "Garagem ou estacionamento por mês",
+      "kmPerYear": "Quilómetros por ano",
+      "consumption": "Consumo médio",
+      "energyPriceFuel": "Preço médio do combustível",
+      "energyPriceElectric": "Preço médio da eletricidade",
+      "tollsMonth": "Portagens por mês",
+      "maintenanceYear": "Manutenção média por ano",
+      "maintenanceYearHint": "Revisões e reparações. Se deixares em branco, o custo não a inclui.",
+      "tyreSet": "Preço de um jogo de pneus"
+    },
+    "errors": {
+      "required": "Preenche este campo.",
+      "invalid": "Escreve um número válido, por exemplo 1,85.",
+      "requiredPriceOrValue": "Escreve o preço que pagaste ou o valor atual.",
+      "tooOld": "O ano parece demasiado antigo.",
+      "future": "Esta data está no futuro."
+    },
+    "appreciation": {
+      "title": "Confirmas?",
+      "body": "O valor atual ({current}) é maior do que o preço que pagaste ({purchase}). Na maioria dos casos é um engano de escrita.",
+      "confirm": "Sim, o meu carro valorizou",
+      "fix": "Corrigir"
+    }
+  },
+  "dashboard": {
+    "empty": {
+      "title": "Ainda não tens nenhum carro",
+      "body": "Responde a 4 perguntas e vê quanto te custa por mês e por km.",
+      "start": "Começar",
+      "continue": "Continuar onde ficaste"
+    },
+    "period": {
+      "label": "Mostrar o custo",
+      "month": "Mês",
+      "year": "Ano",
+      "km": "Km",
+      "perMonth": "por mês",
+      "perYear": "por ano",
+      "perKm": "por km",
+      "noKm": "Sem quilómetros por ano não há custo por km."
+    },
+    "estimated": "Estimado",
+    "estimateNote": "Isto é uma estimativa. Regista despesas para afinar.",
+    "notes": {
+      "missing": "Não inclui {items}. Adiciona para um custo mais real.",
+      "appreciated": "O teu carro valorizou: vale mais do que pagaste, por isso a depreciação conta a teu favor.",
+      "depreciationEstimated": "A depreciação é estimada com {rate} % ao ano.",
+      "sold": "Vendido a {date}. Os números mostram o custo durante a posse."
+    },
+    "missingItems": {
+      "maintenance": "manutenção",
+      "tyres": "pneus",
+      "iuc": "IUC",
+      "inspection": "inspeção"
+    },
+    "fixedVariable": {
+      "title": "Fixos e variáveis",
+      "fixed": "Fixos",
+      "variable": "Variáveis",
+      "fixedHint": "Pagas mesmo com o carro parado",
+      "variableHint": "Dependem dos quilómetros"
+    },
+    "categories": {
+      "title": "Para onde vai o dinheiro",
+      "depreciation": "Depreciação",
+      "insurance": "Seguro",
+      "energy": "Combustível",
+      "maintenance": "Manutenção",
+      "taxes": "Impostos",
+      "other": "Outros",
+      "perYear": "{value} por ano"
+    },
+    "tips": {
+      "title": "Dicas",
+      "compare-insurance": "O seguro pesa mais de 30 % dos custos fixos. Compara seguros na próxima renovação.",
+      "check-tyre-pressure": "O consumo subiu nos últimos enchimentos. Verifica a pressão dos pneus.",
+      "low-km": "Fazes poucos quilómetros por ano, por isso cada km sai caro. Vê se compensa ter carro.",
+      "high-km": "Fazes muitos quilómetros por ano. Conta com mais gastos de manutenção."
+    }
+  },
+  "explain": {
+    "button": "Como é calculado?",
+    "title": "Como é calculado",
+    "intro": "Todas as contas usam os valores que preencheste. O que é estimado diz \"estimado\".",
+    "steps": {
+      "depreciation-linear": "Depreciação: ({purchase} − {current}) ÷ {years} anos = {result} por ano",
+      "depreciation-compound": "Depreciação estimada: sem valor atual, estima-se que hoje vale {current} ({rate} % ao ano durante {years} anos). ({purchase} − {current}) ÷ {years} = {result} por ano",
+      "depreciation-rate": "Depreciação estimada: {rate} % de {base} = {result} por ano",
+      "insurance": "Seguro: {result} por ano",
+      "iuc": "IUC: {result} por ano",
+      "interest": "Juros do crédito: {total} de juros em {months} prestações, contando só as dos últimos 12 meses = {result}",
+      "other-fixed": "Garagem e estacionamento: {parkingMonth} × 12 = {result}",
+      "opportunity": "Custo de oportunidade: {rate} % de {value} = {result}",
+      "fixed-total": "Total dos fixos: {result} por ano",
+      "energy": "Energia: {km} km × {consumption} {unit} ÷ 100 × {price} = {result}",
+      "maintenance": "Manutenção: {result} por ano",
+      "tyres": "Pneus: {km} km × {set} ÷ {lifeKm} km = {result}",
+      "tolls": "Portagens: {month} × 12 = {result}",
+      "variable-total": "Total dos variáveis: {result} por ano",
+      "total-year": "Total: {fixed} + {variable} = {result} por ano",
+      "total-month": "Por mês: {year} ÷ 12 = {result}",
+      "per-km": "Por km: {year} ÷ {km} km = {result}"
+    }
+  },
   "backup": {
     "replaceQuestion": "Já tens dados neste dispositivo. Importar este backup apaga-os e põe no lugar o conteúdo do ficheiro.",
     "replaceConfirm": "Substituir tudo",

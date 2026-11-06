@@ -1,6 +1,6 @@
 import { assertNonNegative } from "./assert";
-import { annualInterest, type Financing } from "./credit";
-import { annualDepreciation } from "./depreciation";
+import { interestInLast12Months, type Financing } from "./credit";
+import { annualDepreciation, type DepreciationResult } from "./depreciation";
 import { DEFAULTS } from "./rules";
 
 export interface CostInput {
@@ -12,16 +12,20 @@ export interface CostInput {
   /** Só híbridos plug-in: parte dos km feitos em modo elétrico. */
   electricMode?: { sharePct: number; consumptionPer100: number; energyPriceCents: number };
 
-  purchasePriceCents: number;
+  /** Pelo menos um de `purchasePriceCents` e `currentValueCents`. */
+  purchasePriceCents?: number;
   currentValueCents?: number;
-  ownershipYears: number;
+  /** Ausente quando não se sabe a data de compra. */
+  ownershipYears?: number;
   depreciationRatePct?: number;
 
   insuranceYearCents: number;
-  iucYearCents: number;
+  iucYearCents?: number;
   inspectionPriceCents?: number;
   inspectionIntervalYears?: number;
   financing?: Financing;
+  /** Dia de referência (yyyy-mm-dd) para contar só os juros dos últimos 12 meses. */
+  asOf?: string;
   parkingMonthCents?: number;
   otherFixedYearCents?: number;
   opportunityCost?: { enabled: boolean; ratePct: number };
@@ -52,7 +56,7 @@ export interface VariableCosts {
 export type EstimatedField = "depreciation" | "tyreLife";
 
 /** Categorias sem valor inicial: contam 0 € e o ecrã tem de o dizer. */
-export type MissingField = "maintenance" | "tyres";
+export type MissingField = "maintenance" | "tyres" | "iuc" | "inspection";
 
 /** Todos os valores em cêntimos por ano, sem arredondar. Arredonda-se só ao mostrar. */
 export interface CostResult {
@@ -66,8 +70,13 @@ export interface CostResult {
   perKm: number | null;
   /** Custo variável por km (energia, manutenção e pneus), para o ponto de equilíbrio. */
   variablePerKm: number | null;
+  depreciation: DepreciationResult;
+  /** Vida dos pneus usada (a indicada ou a inicial). */
+  tyreLifeKm: number;
   estimated: EstimatedField[];
   missing: MissingField[];
+  /** A depreciação é negativa: o carro vale mais do que custou. */
+  appreciated: boolean;
 }
 
 export function annualCost(input: CostInput): CostResult {
@@ -101,19 +110,19 @@ export function annualCost(input: CostInput): CostResult {
   const fixed: FixedCosts = {
     depreciation: depreciation.annualCents,
     insurance: input.insuranceYearCents,
-    iuc: input.iucYearCents,
+    iuc: input.iucYearCents ?? 0,
     inspection: annualizedInspection(input.inspectionPriceCents, input.inspectionIntervalYears),
-    interest: input.financing ? annualInterest(input.financing) : 0,
+    interest: input.financing ? interestInLast12Months(input.financing, input.asOf) : 0,
     other: (input.parkingMonthCents ?? 0) * 12 + (input.otherFixedYearCents ?? 0),
     opportunity: (depreciation.currentValueCents * opportunityRate) / 100,
   };
 
+  const tyreLifeKm = input.tyreLifeKm ?? DEFAULTS.tyreLifeKm;
   let tyres = 0;
   if (input.tyreSetCents) {
-    const lifeKm = input.tyreLifeKm ?? DEFAULTS.tyreLifeKm;
     if (input.tyreLifeKm === undefined) estimated.push("tyreLife");
-    if (lifeKm <= 0) throw new RangeError(`Vida dos pneus inválida: ${lifeKm}`);
-    tyres = (km * input.tyreSetCents) / lifeKm;
+    if (tyreLifeKm <= 0) throw new RangeError(`Vida dos pneus inválida: ${tyreLifeKm}`);
+    tyres = (km * input.tyreSetCents) / tyreLifeKm;
   }
 
   const variable: VariableCosts = {
@@ -136,8 +145,11 @@ export function annualCost(input: CostInput): CostResult {
     totalMonth: totalYear / 12,
     perKm: km > 0 ? totalYear / km : null,
     variablePerKm: km > 0 ? (variable.energy + variable.maintenance + variable.tyres) / km : null,
+    depreciation,
+    tyreLifeKm,
     estimated,
     missing: missingFields(input),
+    appreciated: depreciation.annualCents < 0,
   };
 }
 
@@ -145,6 +157,8 @@ function missingFields(input: CostInput): MissingField[] {
   const missing: MissingField[] = [];
   if (input.maintenanceYearCents === undefined) missing.push("maintenance");
   if (input.tyreSetCents === undefined) missing.push("tyres");
+  if (input.iucYearCents === undefined) missing.push("iuc");
+  if (input.inspectionPriceCents === undefined) missing.push("inspection");
   return missing;
 }
 
