@@ -7,5 +7,17 @@
     "title": "Quanto te custa o teu carro, de verdade?",
     "subtitle": "Descobre o custo por mês e por km em 2 minutos. Fica tudo no teu telemóvel",
     "cta": "Calcular o meu custo"
+  },
+  "backup": {
+    "replaceQuestion": "Já tens dados neste dispositivo. Importar este backup apaga-os e põe no lugar o conteúdo do ficheiro.",
+    "replaceConfirm": "Substituir tudo",
+    "cancel": "Cancelar",
+    "errors": {
+      "invalid-file": "Este ficheiro não é um backup válido.",
+      "not-kilora": "Este ficheiro não é um backup do Kilora.",
+      "newer-version": "Este backup foi feito com uma versão mais recente do Kilora. Atualiza a app e tenta outra vez.",
+      "invalid-data": "Este backup tem dados com erros. Não foi importado nada e os teus dados continuam como estavam.",
+      "existing-data": "Já tens dados neste dispositivo. Escolhe substituir tudo ou cancelar."
+    }
   }
 }

@@ -407,6 +407,11 @@ interface Settings {
 - Cada gravação valida os dados com um esquema (Zod). Dados inválidos nunca entram na base.
 - Alterações ao modelo fazem-se com migrações numeradas. Nunca se apaga dados do utilizador numa migração.
 - Fotos de recibos ficam numa tabela à parte, comprimidas, com limite de tamanho por foto.
+- Decidido na Etapa 2:
+  - Os preços por litro ou kWh (`energyPriceCents`, `unitPriceCents`) aceitam décimas de cêntimo, porque os combustíveis têm 3 casas decimais (1,759 €/L = 175,9 cêntimos). Os montantes pagos continuam em cêntimos inteiros.
+  - As fotos guardam-se como bytes (`Uint8Array`) com o tipo de imagem, e não como `Blob`, porque os bytes funcionam melhor no Safari do iPhone e passam diretamente para o backup. O limite é de 1 MB por foto, depois de comprimida.
+  - Um campo em branco fica ausente na base de dados e no backup, nunca guardado como 0. Um 0 escrito pela pessoa continua a ser 0.
+  - Importar um backup é tudo ou nada: valida o ficheiro inteiro antes de gravar e grava numa só transação. Se já houver dados no dispositivo, a pessoa escolhe substituir tudo ou cancelar.
 - O backup em JSON inclui o número de versão do esquema e as fotos opcionais.
 
 ### O que nunca se guarda nem se envia
