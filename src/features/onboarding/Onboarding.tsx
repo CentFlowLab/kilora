@@ -22,6 +22,7 @@ import { saveVehicle } from "@/db/repo";
 import { FUELS, type Fuel } from "@/db/schemas";
 import { t } from "@/i18n";
 import { formatWholeEuros, parseEurosToCents } from "@/lib/format";
+import { newId } from "@/lib/uuid";
 import {
   STEPS,
   draftToVehicle,
@@ -100,7 +101,7 @@ export function Onboarding() {
     setSaving(true);
     try {
       const vehicle = draftToVehicle(current, {
-        id: crypto.randomUUID(),
+        id: newId(),
         now: new Date(),
         defaultNickname: t("onboarding.defaultNickname"),
       });

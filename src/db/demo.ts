@@ -1,4 +1,5 @@
 import { format, subDays, subYears } from "date-fns";
+import { newId } from "@/lib/uuid";
 import type { KiloraDB } from "./db";
 import { hasUserData, saveExpense, saveReminder, saveVehicle } from "./repo";
 import type { Expense, Vehicle } from "./schemas";
@@ -13,7 +14,7 @@ export async function seedDemoData(db: KiloraDB, now: Date = new Date()): Promis
   if (await hasUserData(db)) throw new Error("Já há dados neste dispositivo. Os dados de demonstração não os substituem");
 
   const vehicle = await saveVehicle(db, {
-    id: crypto.randomUUID(),
+    id: newId(),
     nickname: "Carro de demonstração",
     year: now.getFullYear() - 6,
     fuel: "gasolina",
@@ -42,7 +43,7 @@ export async function seedDemoData(db: KiloraDB, now: Date = new Date()): Promis
   ];
   for (const fill of fills) {
     const expense: Expense = {
-      id: crypto.randomUUID(),
+      id: newId(),
       vehicleId: vehicle.id,
       date: day(subDays(now, fill.daysAgo)),
       type: "energia",
@@ -56,7 +57,7 @@ export async function seedDemoData(db: KiloraDB, now: Date = new Date()): Promis
   }
 
   await saveReminder(db, {
-    id: crypto.randomUUID(),
+    id: newId(),
     vehicleId: vehicle.id,
     kind: "inspecao",
     dueDate: day(subDays(subYears(now, -1), 1)),
